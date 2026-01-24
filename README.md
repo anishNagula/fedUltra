@@ -72,4 +72,4 @@ python -m experiments.train_graphsage
 ---
 ## Current Status
 - End-to-end pipeline runs successfully
-- Centralized baseline validated
+- Centralized Baseline Validated
