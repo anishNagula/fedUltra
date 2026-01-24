@@ -1,0 +1,12 @@
+# Core numerical + data handling
+numpy==1.26.4
+pandas==2.1.4
+
+# Graph construction & analysis
+networkx==3.2.1
+
+# Progress bars / logging
+tqdm==4.66.1
+
+# PyTorch (CPU-only for now; works on macOS and Linux)
+torch==2.1.2
