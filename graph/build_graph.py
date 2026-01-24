@@ -1,6 +1,6 @@
-import pandas as pd
 import networkx as nx
-from typing import Dict
+import bz2
+from typing import Dict, Optional
 
 from graph.schema import NodeType, RelationType
 
@@ -13,18 +13,27 @@ class GraphBuilder:
         self.next_node_id = 0
 
     def _get_or_create_node(self, entity: str, node_type: NodeType) -> int:
-        if entity not in self.node_map:
+        """
+        Create or fetch a node ID.
+        Namespacing by node_type avoids collisions (e.g., USER:U1 vs HOST:U1).
+        """
+
+        key = f"{node_type.value}:{entity}"
+
+        if key not in self.node_map:
             node_id = self.next_node_id
-            self.node_map[entity] = node_id
+            self.node_map[key] = node_id
             self.next_node_id += 1
 
             self.graph.add_node(
                 node_id,
-                entity = entity,
-                node_type = node_type.value
+                entity=entity,
+                node_type=node_type.value,
+                in_degree=0,
+                out_degree=0,
             )
-        
-        return self.node_map[entity]
+
+        return self.node_map[key]
 
     def add_edge(
         self,
@@ -45,15 +54,45 @@ class GraphBuilder:
             timestamp = timestamp,
         )
 
-    def build_from_dataframe(self, df: pd.DataFrame):
-        for _, row in df.iterrows():
-            self.add_edge(
-                src_entity = row["src"],
-                dst_entity = row["dst"],
-                src_type = NodeType.USER,
-                dst_type = NodeType.HOST,
-                relation = RelationType.AUTHENTICATES_TO,
-                timestamp = int(row["timestamp"])
-            )
+        self.graph.nodes[src_id]["out_degree"] += 1
+        self.graph.nodes[dst_id]["in_degree"] += 1
+
+    def build_from_lanl_file(
+        self,
+        file_path: str,
+        max_lines: Optional[int] = None,
+    ):
+        """
+        Build graph from LANL authentication log (.bz2).
+        Format per line:
+        timestamp,user,computer
+        Example:
+        1,U1,C1
+        """
+
+        with bz2.open(file_path, "rt") as f:
+            for i, line in enumerate(f):
+                if max_lines is not None and i >= max_lines:
+                    break
+
+                parts = line.strip().split(",")
+                if len(parts) != 3:
+                    continue    # skip malformed lines
+
+                ts_str, user, computer = parts
+
+                try:
+                    timestamp = int(ts_str)
+                except ValueError:
+                    continue
+
+                self.add_edge(
+                    src_entity = user,
+                    dst_entity = computer,
+                    src_type = NodeType.USER,
+                    dst_type = NodeType.HOST,
+                    relation = RelationType.AUTHENTICATES_TO,
+                    timestamp = int(timestamp),
+                )
 
         return self.graph
