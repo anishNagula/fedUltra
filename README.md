@@ -9,11 +9,17 @@ Current focus is on **graph construction and centralized baseline validation** u
 
 - Parsed LANL authentication logs (`.bz2`)
 - Built a typed directed graph (USER → HOST)
-- Added basic validation and visualization
-- Converted graph to PyTorch Geometric format
-- Implemented and ran a centralized GraphSAGE baseline (pipeline validation only)
+- Defined a domain-driven graph schema (nodes, relations, features)
+- Added basic validation and visualization utilities
+- Converted NetworkX graphs to PyTorch Geometric format
+- Implemented and ran a centralized **GraphSAGE** baseline (pipeline validation)
+- **Enriched authentication graphs with time-based HOST → HOST flow edges**
+- **Operationalized zero-day definition using path-based train/test split**
+  - Training-safe nodes: paths ≤ 2 hops  
+  - Zero-day candidates: paths ≥ 3 hops  
 
-> No anomaly detection, zero-day evaluation, or federation yet.
+> Current implementation focuses on **pipeline correctness and structural setup**.  
+> No anomaly scoring, ULTRA evaluation, or federation yet.
 
 ---
 
@@ -21,7 +27,7 @@ Current focus is on **graph construction and centralized baseline validation** u
 
 ```text
 fedUltra/
-├── graph/            # Graph schema, construction, conversion, visualization
+├── graph/            # Schema, construction, enrichment, splitting, visualization
 ├── models/           # GraphSAGE model
 ├── experiments/      # Training scripts
 ├── data/             # Ignored (raw + processed data)
@@ -49,9 +55,19 @@ pip install -r requirements.txt
 python -m graph.test_read_lanl
 ```
 
-### Build graph
+### Build base authentication graph
 ```bash
 python -m graph.build_lanl_graph
+```
+
+### Add time-based flow enrichment (HOST → HOST)
+```bash
+python -m graph.add_flows
+```
+
+### Perform path-based train/test split
+```bash
+python -m graph.path_split
 ```
 
 ### Visualize small subgraph
@@ -59,17 +75,21 @@ python -m graph.build_lanl_graph
 python -m graph.visualize_graph
 ```
 
-### Convert to PyG format
+### Convert to PyTorch Geometric format
 ```bash
 python -m graph.nx_to_pyg
 ```
 
-### Run centralized GraphSAGE baseline
+### Run centralized GraphSAGE baseline (validation only)
 ```bash
 python -m experiments.train_graphsage
 ```
 
 ---
 ## Current Status
-- End-to-end pipeline runs successfully
-- Centralized Baseline Validated
+- End-to-end graph pipeline validated
+- Time-based flow graphs constructed
+- Zero-day candidates identified via structural paths
+- Centralized GraphSAGE baseline runs successfully
+
+Next steps include training on the restricted graph, anomaly scoring, and ULTRA-based evaluation, followed by federated extensions.
