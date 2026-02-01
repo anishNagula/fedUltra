@@ -29,7 +29,7 @@ def bfs_max_depth(graph, source, max_depth=3):
 
 
 def main():
-    with open("data/processed/lanl_graph.pkl", "rb") as f:
+    with open("data/processed/lanl_flow_graph.pkl", "rb") as f:
         graph = pickle.load(f)
 
     depth_bucket = defaultdict(set)

@@ -14,6 +14,7 @@ class RelationType(str, Enum):
     AUTHENTICATES_TO = "authenticates_to"
     ACCESSES = "accesses"
     ESCALATES_PRIVILEGE_ON = "escalates_on"
+    FLOWS_TO = "flows_to"   # derived time-based flow
 
 
 # feature definitions
@@ -51,5 +52,6 @@ ALLOWED_RELATIONS: Dict[RelationType, List[NodeType]] = {
     RelationType.AUTHENTICATES_TO: [NodeType.USER, NodeType.HOST],
     RelationType.ACCESSES: [NodeType.HOST, NodeType.HOST],
     RelationType.ESCALATES_PRIVILEGE_ON: [NodeType.USER, NodeType.HOST],
+    RelationType.FLOWS_TO: [NodeType.HOST, NodeType.HOST],  # new
 }
 
